@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "B站字幕助手",
+  "version": "1.0.0",
+  "description": "提取B站视频字幕，支持自定义Prompt，一键复制字幕+Prompt到AI工具进行视频总结",
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.bilibili.com/*"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bilibili.com/video/*",
+        "https://www.bilibili.com/list/*"
+      ],
+      "js": [
+        "subtitle-fetcher.js",
+        "ui.js",
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}

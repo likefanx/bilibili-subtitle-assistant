@@ -1,0 +1,65 @@
+/**
+ * B站字幕助手 — 注入样式
+ * 与 ui.js 中的内联样式互补，处理一些媒体查询和动画
+ */
+
+/* Panel animation */
+#__bilibili_subtitle_panel__ {
+  animation: bilibiliPanelIn 0.25s ease-out;
+}
+#__bilibili_subtitle_panel__.hidden {
+  animation: none;
+  display: none !important;
+}
+
+@keyframes bilibiliPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar styling for subtitle area */
+#__bilibili_subtitle_panel__ .subtitle-area {
+  scrollbar-width: thin;
+  scrollbar-color: #444 #0f0f23;
+}
+
+/* Minimized state */
+#__bilibili_subtitle_panel__.minimized .panel-content {
+  display: none !important;
+}
+
+/* Toast animation */
+#__bilibili_subtitle_panel_toast__ {
+  pointer-events: none;
+}
+
+/* Responsive: narrower on small screens */
+@media (max-width: 500px) {
+  #__bilibili_subtitle_panel__ {
+    width: calc(100vw - 20px) !important;
+    right: 10px !important;
+    left: 10px !important;
+    max-height: 60vh !important;
+  }
+}
+
+/* Player button: match B站 dark theme */
+.bpx-player-ctrl-bottom #__bilibili_subtitle_btn__ {
+  /* ensures button fits in the control bar */
+  height: 28px;
+  margin: 0 2px;
+}
+
+/* Dark theme for sites with light mode */
+@media (prefers-color-scheme: light) {
+  /* B站 uses dark theme regardless, but just in case */
+  #__bilibili_subtitle_panel__ {
+    border: 1px solid #ddd;
+  }
+}

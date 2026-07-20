@@ -49,16 +49,17 @@
   }
 }
 
-/* Player button: match B站 dark theme */
-.bpx-player-ctrl-bottom #__bilibili_subtitle_btn__ {
-  /* ensures button fits in the control bar */
-  height: 28px;
-  margin: 0 2px;
+/* Floating button - active pulse */
+#__bilibili_subtitle_btn__.active {
+  animation: bilibiliBtnPulse 2s ease-in-out infinite;
+}
+@keyframes bilibiliBtnPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(82, 196, 26, 0); }
 }
 
 /* Dark theme for sites with light mode */
 @media (prefers-color-scheme: light) {
-  /* B站 uses dark theme regardless, but just in case */
   #__bilibili_subtitle_panel__ {
     border: 1px solid #ddd;
   }

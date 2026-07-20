@@ -228,34 +228,42 @@ var BILIBILI_SUBTITLE_UI = (function() {
     '  background: #00a1d6; border-color: #00a1d6; color: #fff; font-weight: 600;',
     '}',
 
-    // Player button
+    // Floating button (circular, bottom-right of viewport)
     '#' + BTN_ID + ' {',
-    '  display: inline-flex !important;',
+    '  position: fixed;',
+    '  z-index: 99998;',
+    '  width: 40px;',
+    '  height: 40px;',
+    '  background: rgba(0, 161, 214, 0.85);',
+    '  border: 2px solid rgba(255,255,255,0.25);',
+    '  border-radius: 50%;',
+    '  display: flex !important;',
     '  align-items: center;',
     '  justify-content: center;',
-    '  gap: 4px;',
-    '  background: rgba(255,255,255,0.08);',
-    '  border: 1px solid rgba(255,255,255,0.15);',
-    '  border-radius: 5px;',
-    '  color: #ccc;',
-    '  padding: 4px 10px;',
-    '  font-size: 12px;',
-    '  cursor: pointer;',
-    '  line-height: 20px;',
-    '  font-family: -apple-system, BlinkMacSystemFont, sans-serif;',
+    '  cursor: grab;',
+    '  box-shadow: 0 2px 12px rgba(0,0,0,0.35);',
+    '  transition: box-shadow 0.2s, transform 0.15s, background 0.2s;',
+    '  user-select: none;',
+    '  touch-action: none;',
     '}',
     '#' + BTN_ID + ':hover {',
-    '  color: #fff;',
-    '  background: rgba(255,255,255,0.15);',
+    '  background: #00b5e5;',
+    '  box-shadow: 0 4px 16px rgba(0,161,214,0.45);',
+    '  transform: scale(1.08);',
+    '}',
+    '#' + BTN_ID + ':active, #' + BTN_ID + '.dragging {',
+    '  transform: scale(0.92);',
+    '  box-shadow: 0 1px 6px rgba(0,0,0,0.3);',
     '}',
     '#' + BTN_ID + ' .subtitle-btn-icon {',
-    '  font-size: 14px;',
+    '  font-size: 20px;',
     '  line-height: 1;',
+    '  pointer-events: none;',
     '}',
     '#' + BTN_ID + '.active {',
-    '  color: #00a1d6;',
-    '  border-color: #00a1d6;',
-    '}'
+    '  border-color: #52c41a;',
+    '  background: rgba(82, 196, 26, 0.85);',
+    '}',
   ].join('\n');
 
   function injectStyles() {
@@ -481,47 +489,58 @@ var BILIBILI_SUBTITLE_UI = (function() {
   function injectButton() {
     if (document.getElementById(BTN_ID)) return;
 
-    // Try to find B站 player control bar
-    var targetSelectors = [
-      '.bpx-player-control-wrap',           // B站 new player (primary)
-      '.bpx-player-ctrl-bottom',            // B站 old player
-      '.bilibili-player-video-control',     // B站 legacy
-      '[class*="player-ctrl"]'              // Generic fallback
-    ];
-
-    var container = null;
-    for (var i = 0; i < targetSelectors.length; i++) {
-      container = document.querySelector(targetSelectors[i]);
-      if (container) break;
-    }
-
     var btn = document.createElement('div');
     btn.id = BTN_ID;
-    btn.innerHTML = '<span class="subtitle-btn-icon">📝</span><span>字幕</span>';
     btn.title = '提取B站字幕';
+    btn.innerHTML = '<span class="subtitle-btn-icon">📝</span>';
+
     btn.addEventListener('click', function(e) {
+      if (btn.classList.contains('dragging')) return;
       e.stopPropagation();
       e.preventDefault();
       togglePanel();
     });
 
-    if (container) {
-      // Insert before last element or append
-      var lastChild = container.lastElementChild;
-      if (lastChild && lastChild.tagName === 'DIV' && lastChild.className.indexOf('bpx-player-ctrl-btn') >= 0) {
-        container.insertBefore(btn, lastChild);
-      } else {
-        container.appendChild(btn);
+    // Drag support
+    var isDragging = false, startX, startY, origLeft, origTop;
+
+    btn.addEventListener('mousedown', function(e) {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      var rect = btn.getBoundingClientRect();
+      origLeft = rect.left;
+      origTop = rect.top;
+      btn.style.cursor = 'grabbing';
+      btn.style.transition = 'none';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      var dx = e.clientX - startX;
+      var dy = e.clientY - startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) btn.classList.add('dragging');
+      btn.style.left = (origLeft + dx) + 'px';
+      btn.style.top = (origTop + dy) + 'px';
+      btn.style.right = 'auto';
+      btn.style.bottom = 'auto';
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (isDragging) {
+        isDragging = false;
+        btn.style.cursor = 'grab';
+        btn.style.transition = '';
+        setTimeout(function() { btn.classList.remove('dragging'); }, 50);
       }
-    } else {
-      // Fallback: inject floating button near the player
-      btn.style.cssText = 'position:absolute;top:10px;right:10px;z-index:9999;';
-      var playerArea = document.querySelector('#bilibiliPlayer, .bpx-player-video-area, .bilibili-player-video');
-      if (playerArea) {
-        playerArea.style.position = playerArea.style.position || 'relative';
-        playerArea.appendChild(btn);
-      }
-    }
+    });
+
+    // Default position: bottom-right of the viewport
+    btn.style.right = '24px';
+    btn.style.bottom = '120px';
+
+    document.body.appendChild(btn);
   }
 
   function updateButtonState(active) {
